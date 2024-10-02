@@ -1,7 +1,7 @@
 streamlit
-wordcloud
 pandas
-matplotlib
-nltk
-sklearn.feature_extraction.text
+wordcloud
+matplotlib.pyplot
 string
+sklearn.feature_extraction.text
+collections
