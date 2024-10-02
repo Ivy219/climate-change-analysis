@@ -3,3 +3,5 @@ wordcloud
 pandas
 matplotlib
 nltk
+sklearn.feature_extraction.text
+string
