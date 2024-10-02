@@ -3,34 +3,20 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from collections import Counter
-import numpy as np
 
+# Load the dataset (replace with your actual file path if needed)
+df = pd.read_csv('twitter_sentiment_data.csv')
 
-def read_dataset():
-    """import dataset from twitter_sentiment_data.csv
-    """
-    data = np.loadtxt('twitter_sentiment_data.csv')
-    posts = [data]
-    return posts
-    
-
-
-# Sample dataset: semantic Twitter posts on climate change
-data = {
-    'posts': [
-        "Climate change is real and happening now.",
-        "We must take action against climate change.",
-        "The effects of global warming are evident.",
-        "Climate change denial is dangerous.",
-        "Renewable energy is key to fighting climate change."
-    ]
-}
+# Ensure that the 'text' column exists
+if 'message' not in df.columns:
+    st.error("Missing data")
+    st.stop()
 
 # Tokenize and calculate word frequencies
 def calculate_word_frequencies(posts):
     tokens = []
     for post in posts:
-        tokens.extend(post.lower().split())  # Replaced nltk.word_tokenize with split()
+        tokens.extend(post.lower().split())  
     word_freq = Counter(tokens)
     return word_freq
 
@@ -39,9 +25,8 @@ def generate_wordcloud(frequencies):
     wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(frequencies)
     return wc
 
-# Prepare data
-df = pd.DataFrame(data)
-word_freq = calculate_word_frequencies(df['posts'])
+# Prepare data (using the 'text' column from your dataset)
+word_freq = calculate_word_frequencies(df['message'])
 wordcloud = generate_wordcloud(word_freq)
 
 # Streamlit App
@@ -57,10 +42,10 @@ st.pyplot(plt)
 # Context display
 selected_word = st.text_input("Enter a word to see its context:")
 if selected_word:
-    context_sentences = [post for post in data['posts'] if selected_word in post.lower()]
+    context_sentences = [post for post in df['message'] if selected_word in post.lower()]
     if context_sentences:
-        st.write("#### Context Sentences:")
+        st.write("#### Original Twitter Post:")
         for sentence in context_sentences:
             st.write(f"- {sentence}")
     else:
-        st.write("No context found for this word.")
+        st.write("No post found for this word.")
