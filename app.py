@@ -3,6 +3,8 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from collections import Counter
+import string
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 
 # Load the dataset (replace with your actual file path if needed)
 df = pd.read_csv('twitter_sentiment_data.csv')
@@ -11,6 +13,20 @@ df = pd.read_csv('twitter_sentiment_data.csv')
 if 'message' not in df.columns:
     st.error("Missing data")
     st.stop()
+
+
+# Function to clean text
+def clean_posts(message):
+    # Tokenize the text and convert to lowercase
+    tokens = message.lower().split()
+    # Remove stop words and punctuation
+    cleaned_tokens = [word for word in tokens if word not in stop_words and word\
+                      not in string.punctuation]
+    return ' '.join(cleaned_tokens)
+
+# Apply the cleaning function to the 'text' column
+df['cleaned_posts'] = df['message'].apply(clean_posts)
+
 
 # Tokenize and calculate word frequencies
 def calculate_word_frequencies(posts):
