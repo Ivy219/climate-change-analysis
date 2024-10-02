@@ -1,7 +1,6 @@
-streamlit
-pandas
+streamlit==1.39.0
 wordcloud
-matplotlib.pyplot
-string
-sklearn.feature_extraction.text
-collections
+pandas
+matplotlib
+nltk
+scikit-learn
