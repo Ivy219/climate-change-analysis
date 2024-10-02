@@ -3,6 +3,17 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from collections import Counter
+import numpy as np
+
+
+def read_dataset():
+    """import dataset from twitter_sentiment_data.csv
+    """
+    data = np.loadtxt('twitter_sentiment_data.csv')
+    posts = [data]
+    return posts
+    
+
 
 # Sample dataset: semantic Twitter posts on climate change
 data = {
