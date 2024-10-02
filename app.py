@@ -2,38 +2,27 @@ import streamlit as st
 import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-from collections import Counter
 import string
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
+from collections import Counter
 
-# Load the dataset (replace with your actual file path if needed)
+# Load the dataset
 df = pd.read_csv('twitter_sentiment_data.csv')
 
-# Ensure that the 'text' column exists
+# Ensure the 'message' column exists
 if 'message' not in df.columns:
-    st.error("Missing data")
+    st.error("The CSV file must contain a 'message' column with the Twitter posts.")
     st.stop()
 
-
-# Function to clean text
-def clean_posts(message):
-    # Tokenize the text and convert to lowercase
-    tokens = message.lower().split()
-    # Remove stop words and punctuation
-    cleaned_tokens = [word for word in tokens if word not in stop_words and word\
-                      not in string.punctuation]
-    return ' '.join(cleaned_tokens)
-
-# Apply the cleaning function to the 'text' column
-df['cleaned_posts'] = df['message'].apply(clean_posts)
-
-
-# Tokenize and calculate word frequencies
+# Function to clean text and generate word frequencies
 def calculate_word_frequencies(posts):
     tokens = []
     for post in posts:
-        tokens.extend(post.lower().split())  
-    word_freq = Counter(tokens)
+        # Tokenize the text and remove stop words and punctuation
+        cleaned_tokens = [word for word in post.lower().split() 
+                          if word not in stop_words and word not in string.punctuation]
+        tokens.extend(cleaned_tokens)  # Add cleaned tokens to the list
+    word_freq = Counter(tokens)  # Count frequencies of each token
     return word_freq
 
 # Generate word cloud
@@ -41,7 +30,7 @@ def generate_wordcloud(frequencies):
     wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(frequencies)
     return wc
 
-# Prepare data (using the 'text' column from your dataset)
+# Calculate word frequencies from the 'message' column
 word_freq = calculate_word_frequencies(df['message'])
 wordcloud = generate_wordcloud(word_freq)
 
@@ -60,8 +49,8 @@ selected_word = st.text_input("Enter a word to see its context:")
 if selected_word:
     context_sentences = [post for post in df['message'] if selected_word in post.lower()]
     if context_sentences:
-        st.write("#### Original Twitter Post:")
+        st.write("#### Context Sentences:")
         for sentence in context_sentences:
             st.write(f"- {sentence}")
     else:
-        st.write("No post found for this word.")
+        st.write("No context found for this word.")
