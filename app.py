@@ -1,5 +1,5 @@
 import nltk
-nltk.download('punkt')
+nltk.data.path.append('./nltk_data')
 import streamlit as st
 import pandas as pd
 from wordcloud import WordCloud
