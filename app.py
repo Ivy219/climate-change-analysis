@@ -1,11 +1,7 @@
-import nltk
-nltk.data.path.append('./nltk_data')
 import streamlit as st
 import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import io
-import base64
 from collections import Counter
 
 # Sample dataset: semantic Twitter posts on climate change
@@ -23,7 +19,7 @@ data = {
 def calculate_word_frequencies(posts):
     tokens = []
     for post in posts:
-        tokens.extend(nltk.word_tokenize(post.lower()))
+        tokens.extend(post.lower().split())  # Replaced nltk.word_tokenize with split()
     word_freq = Counter(tokens)
     return word_freq
 
@@ -57,4 +53,3 @@ if selected_word:
             st.write(f"- {sentence}")
     else:
         st.write("No context found for this word.")
-        
