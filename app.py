@@ -1,14 +1,12 @@
+import nltk
+nltk.download('punkt')
 import streamlit as st
 import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import io
 import base64
-import nltk
 from collections import Counter
-
-# Load NLTK tokenizer
-nltk.download('punkt')
 
 # Sample dataset: semantic Twitter posts on climate change
 data = {
