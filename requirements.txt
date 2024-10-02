@@ -1,0 +1,7 @@
+streamlit
+pandas
+wordcloud
+matplotlib.pyplot
+string
+sklearn.feature_extraction.text
+collections
