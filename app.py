@@ -3,7 +3,6 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import string
-import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 from collections import Counter
@@ -51,10 +50,9 @@ if word_freq:
     # Streamlit App
     st.title("Word Dashboard of Twitter Posts on Climate Change")
 
-    # Display word cloud
-    st.write("### Total Word Count:")
+    # Display total word count
     total_word_count = sum(word_freq.values())
-    st.write(f"{total_word_count}")  # Display the total word count only
+    st.markdown(f"### Total Word Count: {total_word_count}")
     st.markdown("<p style='font-size: 12px'>(Topic word 'climate change' removed to display more informative vocabularies)</p>", unsafe_allow_html=True)
     
     # Create figure for the word cloud
@@ -94,10 +92,17 @@ if selected_word:
         """, unsafe_allow_html=True)
 
         # Calculate sentiment proportions for the word
-        sentiment_counts = df[df['message'].str.contains(selected_word, case=False)]['sentiment'].value_counts(normalize=True)
-        sentiment_data = pd.DataFrame({'Sentiment': sentiment_counts.index, 'Proportion': sentiment_counts.values})
+        total_posts = len(df[df['message'].str.contains(selected_word, case=False)])
+        sentiment_counts = df[df['message'].str.contains(selected_word, case=False)]['sentiment'].value_counts()
+        sentiment_proportion = sentiment_counts / total_posts  # Calculate proportion
 
-        # Display bar chart for sentiment distribution
+        # Prepare data for plotting
+        sentiment_data = pd.DataFrame({
+            'Sentiment': sentiment_proportion.index,
+            'Proportion': sentiment_proportion.values
+        })
+
+        # Display Clustered bar chart for sentiment distribution
         st.write("### Sentiment Distribution for Posts Containing the Word")
         fig, ax = plt.subplots()
         sns.barplot(x='Proportion', y='Sentiment', data=sentiment_data, palette='coolwarm', ax=ax)
