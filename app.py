@@ -57,43 +57,34 @@ if selected_word:
     word_frequency = word_freq.get(selected_word.lower(), 0)
     st.write(f"Word Frequency of '{selected_word}': {word_frequency}")
 
-    # Show original posts where the word is derived from
-    all_posts = df[df['message'].str.contains(selected_word, case=False)]['message'].drop_duplicates()
-    
-    if len(all_posts) > 0:
-        st.write("### Original posts containing the word:")
-        for post in all_posts:
-            st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
-    else:
-        st.write(f"No posts found containing the word '{selected_word}'.")
-
-    # Add filtering buttons for sentiments (-1, 0, 1, 2)
+    # Add filtering buttons for sentiments (-1, 0, 1, 2) just beneath the word count
     st.write("Filter posts by sentiment score:")
     col1, col2, col3, col4 = st.columns(4)
     
+    # Show original posts where the word is derived from (within a scrollable area)
+    all_posts = df[df['message'].str.contains(selected_word, case=False)]['message'].drop_duplicates()
+    
+    # Check if a sentiment button has been clicked
+    filtered_posts = None
     if col1.button('-1'):
         filtered_posts = filter_posts_by_sentiment(-1, selected_word)
-        st.write("#### Filtered Posts with Sentiment -1:")
-        for post in filtered_posts:
-            st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
-
-    if col2.button('0'):
+    elif col2.button('0'):
         filtered_posts = filter_posts_by_sentiment(0, selected_word)
-        st.write("#### Filtered Posts with Sentiment 0:")
-        for post in filtered_posts:
-            st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
-
-    if col3.button('1'):
+    elif col3.button('1'):
         filtered_posts = filter_posts_by_sentiment(1, selected_word)
-        st.write("#### Filtered Posts with Sentiment 1:")
-        for post in filtered_posts:
-            st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
-
-    if col4.button('2'):
+    elif col4.button('2'):
         filtered_posts = filter_posts_by_sentiment(2, selected_word)
-        st.write("#### Filtered Posts with Sentiment 2:")
+    
+    # If a sentiment button was clicked, display filtered posts
+    if filtered_posts is not None:
+        st.write(f"#### Filtered Posts with Sentiment {sentiment}:")
         for post in filtered_posts:
             st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
+    else:
+        # If no sentiment button clicked, display all posts in a scrollable section
+        with st.expander("See all posts containing the word"):
+            for post in all_posts:
+                st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
 
 # Error message if buttons pressed without entering a word
 else:
