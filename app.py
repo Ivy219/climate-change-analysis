@@ -64,49 +64,54 @@ if selected_word:
     word_frequency = word_freq.get(selected_word.lower(), 0)
     st.write(f"Word Frequency of '{selected_word}': {word_frequency}")
 
-    # Annotations for sentiment buttons moved above
-    st.write("#### Sentiment Analysis Categories:")
-    st.markdown("""
-    **2 (News)**: The tweet links to factual news about climate change  
-    **1 (Pro)**: The tweet supports the belief of man-made climate change  
-    **0 (Neutral)**: The tweet neither supports nor refutes the belief of man-made climate change  
-    **-1 (Anti)**: The tweet does not believe in man-made climate change  
-    """)
+    # Create two columns: Left for the full list, Right for sentiment buttons and filtered list
+    col_left, col_right = st.columns([2, 1])
 
-    # Show sentiment buttons, keep them visible no matter what
-    st.write("Filter posts by sentiment score:")
-    col1, col2, col3, col4 = st.columns(4)
-
-    # Initialize the variable to hold the filtered posts and the sentiment value
-    filtered_posts = None
-    selected_sentiment = None
-
-    # Show original posts where the word is derived from (within a scrollable area)
-    all_posts = df[df['message'].str.contains(selected_word, case=False)]['message'].drop_duplicates()
-
-    # Check if a sentiment button has been clicked, and update filtered_posts accordingly
-    if col1.button('-1'):
-        filtered_posts = filter_posts_by_sentiment(-1, selected_word)
-        selected_sentiment = -1
-    elif col2.button('0'):
-        filtered_posts = filter_posts_by_sentiment(0, selected_word)
-        selected_sentiment = 0
-    elif col3.button('1'):
-        filtered_posts = filter_posts_by_sentiment(1, selected_word)
-        selected_sentiment = 1
-    elif col4.button('2'):
-        filtered_posts = filter_posts_by_sentiment(2, selected_word)
-        selected_sentiment = 2
-
-    # Always show the sentiment buttons and display results
-    if filtered_posts is not None:
-        st.write(f"#### Filtered Posts for sentiment {selected_sentiment}:")
-        with st.expander(f"See posts with sentiment {selected_sentiment}"):
-            for post in filtered_posts:
-                st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
-    else:
+    # Left side: Full list of posts (scrollable section)
+    with col_left:
+        st.write("### Full List of Posts Containing the Word:")
+        all_posts = df[df['message'].str.contains(selected_word, case=False)]['message'].drop_duplicates()
         with st.expander("See all posts containing the word"):
             for post in all_posts:
+                st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
+
+    # Right side: Sentiment buttons and filtered posts
+    with col_right:
+        # Annotations for sentiment buttons
+        st.write("#### Sentiment Analysis Categories:")
+        st.markdown("""
+        **2 (News)**: The tweet links to factual news about climate change  
+        **1 (Pro)**: The tweet supports the belief of man-made climate change  
+        **0 (Neutral)**: The tweet neither supports nor refutes the belief of man-made climate change  
+        **-1 (Anti)**: The tweet does not believe in man-made climate change  
+        """)
+
+        # Sentiment buttons
+        st.write("#### Filter posts by sentiment score:")
+        col1, col2, col3, col4 = st.columns(4)
+
+        # Initialize the variable to hold the filtered posts and the sentiment value
+        filtered_posts = None
+        selected_sentiment = None
+
+        # Check if a sentiment button has been clicked, and update filtered_posts accordingly
+        if col1.button('-1'):
+            filtered_posts = filter_posts_by_sentiment(-1, selected_word)
+            selected_sentiment = -1
+        elif col2.button('0'):
+            filtered_posts = filter_posts_by_sentiment(0, selected_word)
+            selected_sentiment = 0
+        elif col3.button('1'):
+            filtered_posts = filter_posts_by_sentiment(1, selected_word)
+            selected_sentiment = 1
+        elif col4.button('2'):
+            filtered_posts = filter_posts_by_sentiment(2, selected_word)
+            selected_sentiment = 2
+
+        # Display filtered posts below the buttons
+        if filtered_posts is not None:
+            st.write(f"#### Filtered Posts for sentiment {selected_sentiment}:")
+            for post in filtered_posts:
                 st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
 
 # Error message if buttons pressed without entering a word
