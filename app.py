@@ -3,6 +3,8 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import string
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 from collections import Counter
 import re
@@ -50,9 +52,10 @@ if word_freq:
     st.title("Word Dashboard of Twitter Posts on Climate Change")
 
     # Display word cloud
-    st.write("### Total Word Count (Topic word 'climate change' removed to display more informative vocabularies):")
+    st.write("### Total Word Count:")
     total_word_count = sum(word_freq.values())
-    st.write(f"Total valid token count: {total_word_count}")
+    st.write(f"{total_word_count}")  # Display the total word count only
+    st.markdown("<p style='font-size: 12px'>(Topic word 'climate change' removed to display more informative vocabularies)</p>", unsafe_allow_html=True)
     
     # Create figure for the word cloud
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -84,11 +87,23 @@ if selected_word:
         # Annotations for sentiment buttons
         st.write("#### Sentiment Analysis Categories:")
         st.markdown("""
-        **2 (News)**: The tweet links to factual news about climate change  
+        <p style='font-size: 12px'>**2 (News)**: The tweet links to factual news about climate change  
         **1 (Pro)**: The tweet supports the belief of man-made climate change  
         **0 (Neutral)**: The tweet neither supports nor refutes the belief of man-made climate change  
-        **-1 (Anti)**: The tweet does not believe in man-made climate change  
-        """)
+        **-1 (Anti)**: The tweet does not believe in man-made climate change</p>
+        """, unsafe_allow_html=True)
+
+        # Calculate sentiment proportions for the word
+        sentiment_counts = df[df['message'].str.contains(selected_word, case=False)]['sentiment'].value_counts(normalize=True)
+        sentiment_data = pd.DataFrame({'Sentiment': sentiment_counts.index, 'Proportion': sentiment_counts.values})
+
+        # Display bar chart for sentiment distribution
+        st.write("### Sentiment Distribution for Posts Containing the Word")
+        fig, ax = plt.subplots()
+        sns.barplot(x='Proportion', y='Sentiment', data=sentiment_data, palette='coolwarm', ax=ax)
+        ax.set_xlabel("Proportion of Posts")
+        ax.set_ylabel("Sentiment (-1: Anti, 0: Neutral, 1: Pro, 2: News)")
+        st.pyplot(fig)
 
         # Sentiment buttons
         st.write("#### Filter posts by sentiment score:")
