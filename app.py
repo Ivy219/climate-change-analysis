@@ -75,8 +75,9 @@ if selected_word:
     st.write("Filter posts by sentiment score:")
     col1, col2, col3, col4 = st.columns(4)
 
-    # Initialize the variable to hold the filtered posts
+    # Initialize the variable to hold the filtered posts and the sentiment value
     filtered_posts = None
+    selected_sentiment = None
 
     # Show original posts where the word is derived from (within a scrollable area)
     all_posts = df[df['message'].str.contains(selected_word, case=False)]['message'].drop_duplicates()
@@ -84,16 +85,20 @@ if selected_word:
     # Check if a sentiment button has been clicked, and update filtered_posts accordingly
     if col1.button('-1'):
         filtered_posts = filter_posts_by_sentiment(-1, selected_word)
+        selected_sentiment = -1
     elif col2.button('0'):
         filtered_posts = filter_posts_by_sentiment(0, selected_word)
+        selected_sentiment = 0
     elif col3.button('1'):
         filtered_posts = filter_posts_by_sentiment(1, selected_word)
+        selected_sentiment = 1
     elif col4.button('2'):
         filtered_posts = filter_posts_by_sentiment(2, selected_word)
+        selected_sentiment = 2
 
     # Display either filtered posts or all posts in a scrollable section
     if filtered_posts is not None:
-        st.write(f"#### Filtered Posts for sentiment {sentiment}:")
+        st.write(f"#### Filtered Posts for sentiment {selected_sentiment}:")
         with st.expander("See filtered posts"):
             for post in filtered_posts:
                 st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
