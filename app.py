@@ -10,14 +10,30 @@ import re
 # Load the dataset
 df = pd.read_csv('twitter_sentiment_data.csv')
 
-# Function to clean text and generate word frequencies
+## Function to clean text and generate word frequencies
+#def calculate_word_frequencies(posts):
+    #tokens = []
+    #for post in posts:
+        #cleaned_tokens = [word for word in post.lower().split() 
+                          #if word not in stop_words and word not in string.punctuation and word != "climate" and word != "change"]
+        #tokens.extend(cleaned_tokens)
+    #word_freq = Counter(tokens)
+    #return word_freq
+
 def calculate_word_frequencies(posts):
+    """filter out meaningless word with ENGLISH_STOP_WORD, url links start 
+    with "https://" and topic word "cimate change" and calculate word frequency
+    """
     tokens = []
     for post in posts:
-        cleaned_tokens = [word for word in post.lower().split() 
-                          if word not in stop_words and word not in string.punctuation and word != "climate" and word != "change"]
-        tokens.extend(cleaned_tokens)
-    word_freq = Counter(tokens)
+        for word in post.lower().split():
+            if word not in stop_words and word not in string.punctuation and \
+               word != "climate" and word != "change" and \
+               not word.startswith('https://'):
+                tokens.append(word)
+    word_freq = {}
+    for word in tokens:
+        word_freq[word] = word_freq.get(word, 0) + 1
     return word_freq
 
 # Function to filter posts by sentiment and word
