@@ -94,20 +94,23 @@ if selected_word:
         # Calculate sentiment proportions for the word
         total_posts = len(df[df['message'].str.contains(selected_word, case=False)])
         sentiment_counts = df[df['message'].str.contains(selected_word, case=False)]['sentiment'].value_counts()
-        sentiment_proportion = sentiment_counts / total_posts  # Calculate proportion
+
+        # Calculate proportions as percentages
+        sentiment_proportions = (sentiment_counts / total_posts) * 100  # Convert to percentage
 
         # Prepare data for plotting
         sentiment_data = pd.DataFrame({
-            'Sentiment': sentiment_proportion.index,
-            'Proportion': sentiment_proportion.values
+            'Sentiment': sentiment_proportions.index.astype(str),  # Ensure Sentiment is treated as a string
+            'Proportion': sentiment_proportions.values
         })
 
         # Display Clustered bar chart for sentiment distribution
         st.write("### Sentiment Distribution for Posts Containing the Word")
         fig, ax = plt.subplots()
         sns.barplot(x='Proportion', y='Sentiment', data=sentiment_data, palette='coolwarm', ax=ax)
-        ax.set_xlabel("Proportion of Posts")
+        ax.set_xlabel("Proportion of Posts (%)")
         ax.set_ylabel("Sentiment (-1: Anti, 0: Neutral, 1: Pro, 2: News)")
+        ax.set_xticklabels(ax.get_xticks(), rotation=45)  # Rotate x labels for better visibility
         st.pyplot(fig)
 
         # Sentiment buttons
