@@ -3,7 +3,6 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import string
-import seaborn as sns
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 from collections import Counter
 import re
@@ -104,13 +103,15 @@ if selected_word:
             'Proportion': sentiment_proportions.values
         })
 
-        # Display Clustered bar chart for sentiment distribution
+        # Display Clustered bar chart for sentiment distribution using Matplotlib
         st.write("### Sentiment Distribution for Posts Containing the Word")
         fig, ax = plt.subplots()
-        sns.barplot(x='Proportion', y='Sentiment', data=sentiment_data, palette='coolwarm', ax=ax)
+        ax.barh(sentiment_data['Sentiment'], sentiment_data['Proportion'], color=['red', 'orange', 'yellow', 'green'])
         ax.set_xlabel("Proportion of Posts (%)")
         ax.set_ylabel("Sentiment (-1: Anti, 0: Neutral, 1: Pro, 2: News)")
-        ax.set_xticklabels(ax.get_xticks(), rotation=45)  # Rotate x labels for better visibility
+        ax.set_title("Sentiment Distribution")
+        for index, value in enumerate(sentiment_data['Proportion']):
+            ax.text(value, index, f"{value:.2f}%", va='center')  # Display the percentage on the bars
         st.pyplot(fig)
 
         # Sentiment buttons
