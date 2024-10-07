@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import string
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 from collections import Counter
+import re
 
 # Load the dataset
 df = pd.read_csv('twitter_sentiment_data.csv')
@@ -24,9 +25,10 @@ def filter_posts_by_sentiment(sentiment, selected_word):
     filtered_posts = df[(df['sentiment'] == sentiment) & (df['message'].str.contains(selected_word, case=False))]['message'].drop_duplicates()
     return filtered_posts
 
-# Function to highlight a word in text
+# Function to highlight a word in text (case-insensitive)
 def highlight_word_in_text(text, word):
-    return text.replace(word, f"<span style='color:red'>{word}</span>")
+    pattern = re.compile(re.escape(word), re.IGNORECASE)  # Case-insensitive matching
+    return pattern.sub(f"<span style='color:red'>{word}</span>", text)
 
 # Generate word cloud
 def generate_wordcloud(frequencies):
@@ -71,7 +73,7 @@ if selected_word:
     **-1 (Anti)**: The tweet does not believe in man-made climate change  
     """)
 
-    # Show sentiment buttons, keep them visible
+    # Show sentiment buttons, keep them visible no matter what
     st.write("Filter posts by sentiment score:")
     col1, col2, col3, col4 = st.columns(4)
 
@@ -96,10 +98,10 @@ if selected_word:
         filtered_posts = filter_posts_by_sentiment(2, selected_word)
         selected_sentiment = 2
 
-    # Display either filtered posts or all posts in a scrollable section
+    # Always show the sentiment buttons and display results
     if filtered_posts is not None:
         st.write(f"#### Filtered Posts for sentiment {selected_sentiment}:")
-        with st.expander("See filtered posts"):
+        with st.expander(f"See posts with sentiment {selected_sentiment}"):
             for post in filtered_posts:
                 st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
     else:
