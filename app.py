@@ -35,19 +35,24 @@ def generate_wordcloud(frequencies):
 
 # Calculate word frequencies from the 'message' column
 word_freq = calculate_word_frequencies(df['message'])
-wordcloud = generate_wordcloud(word_freq)
 
-# Streamlit App
-st.title("Word Dashboard of Twitter Posts on Climate Change")
+# Check if word_freq is not empty
+if word_freq:
+    wordcloud = generate_wordcloud(word_freq)
 
-# Display word cloud
-st.write("### Total Word Count (Topic word 'climate change' removed to display more informative vocabularies):")
-total_word_count = sum(word_freq.values())
-st.write(f"Total valid token count: {total_word_count}")
-plt.figure(figsize=(10, 5))
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-st.pyplot(plt)
+    # Streamlit App
+    st.title("Word Dashboard of Twitter Posts on Climate Change")
+
+    # Display word cloud
+    st.write("### Total Word Count (Topic word 'climate change' removed to display more informative vocabularies):")
+    total_word_count = sum(word_freq.values())
+    st.write(f"Total valid token count: {total_word_count}")
+    
+    # Create figure for the word cloud
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.imshow(wordcloud, interpolation='bilinear')
+    ax.axis("off")
+    st.pyplot(fig)
 
 # Word Input
 selected_word = st.text_input("Enter a word to see its context:")
@@ -77,7 +82,7 @@ if selected_word:
     
     # If a sentiment button was clicked, display filtered posts
     if filtered_posts is not None:
-        st.write(f"#### Filtered Posts with Sentiment {sentiment}:")
+        st.write(f"#### Filtered Posts with Sentiment:")
         for post in filtered_posts:
             st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
     else:
