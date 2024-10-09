@@ -7,18 +7,7 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 from collections import Counter
 import re
 
-# Load the dataset
 df = pd.read_csv('twitter_sentiment_data.csv')
-
-## Function to clean text and generate word frequencies
-#def calculate_word_frequencies(posts):
-    #tokens = []
-    #for post in posts:
-        #cleaned_tokens = [word for word in post.lower().split() 
-                          #if word not in stop_words and word not in string.punctuation and word != "climate" and word != "change"]
-        #tokens.extend(cleaned_tokens)
-    #word_freq = Counter(tokens)
-    #return word_freq
 
 def calculate_word_frequencies(posts):
     """filter out meaningless word with ENGLISH_STOP_WORD, url links start 
@@ -29,128 +18,167 @@ def calculate_word_frequencies(posts):
         for word in post.lower().split():
             if word not in stop_words and word not in string.punctuation and \
                word != "climate" and word != "change" and \
-               not word.startswith('https://'):
+               not word.startswith('https:'):
                 tokens.append(word)
     word_freq = {}
     for word in tokens:
         word_freq[word] = word_freq.get(word, 0) + 1
     return word_freq
 
-# Function to filter posts by sentiment and word
-def filter_posts_by_sentiment(sentiment, selected_word):
-    filtered_posts = df[(df['sentiment'] == sentiment) & (df['message'].str.contains(selected_word, case=False))]['message'].drop_duplicates()
-    return filtered_posts
 
-# Function to highlight a word in text (case-insensitive)
-def highlight_word_in_text(text, word):
-    pattern = re.compile(re.escape(word), re.IGNORECASE)  # Case-insensitive matching
-    return pattern.sub(f"<span style='color:red'>{word}</span>", text)
-
-# Generate word cloud
-def generate_wordcloud(frequencies):
-    wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(frequencies)
-    return wc
-
-# Set up session state to track which button was pressed
-if 'sentiment' not in st.session_state:
-    st.session_state.sentiment = None
-
-# Calculate word frequencies from the 'message' column
-word_freq = calculate_word_frequencies(df['message'])
-
-# Check if word_freq is not empty
-if word_freq:
-    wordcloud = generate_wordcloud(word_freq)
-
-    # Streamlit App
-    st.title("Word Dashboard of Twitter Posts on Climate Change")
-
-    # Display total word count
-    total_word_count = sum(word_freq.values())
-    st.markdown(f"### Total Word Count: {total_word_count}")
-    st.markdown("<p style='font-size: 12px'>(Topic word 'climate change' removed to display more informative vocabularies)</p>", unsafe_allow_html=True)
+def generate_wordcloud(word_freq):
+    """Generate word cloud with word frequency and display the figure
+    """
+    word_cloud = WordCloud(width=1000, height=500, background_color="white").\
+        generate_from_frequencies(word_freq)
     
-    # Create figure for the word cloud
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.imshow(wordcloud, interpolation='bilinear')
+    ax.imshow(word_cloud, interpolation='bilinear')
     ax.axis("off")
     st.pyplot(fig)
 
-# Word Input
-selected_word = st.text_input("Enter a word to see its context:")
 
-# Display word frequency and original posts
-if selected_word:
-    word_frequency = word_freq.get(selected_word.lower(), 0)
-    st.write(f"Word Frequency of '{selected_word}': {word_frequency}")
+def prompt_user_keyword(raw_posts):
+    """Prompts a keyword from the user and calculate the keyword frequency. 
+    If no input, show error message
+    """
+    keyword = st.text_input("Enter a word to see its context:")
+    if keyword:
+        keyword_freq = calculate_word_frequencies(raw_posts).get(keyword.lower(), 0)
+        st.write(f"Word Frequency of '{keyword}': {keyword_freq}")
+    else:
+        st.write("Please enter a word to see the filtered results.")
+    return keyword
 
-    # Create two columns: Left for the full list, Right for sentiment buttons and filtered list
-    col_left, col_right = st.columns([2, 1])
 
-    # Left side: Full list of posts (scrollable section)
+def highlight_keyword_in_post(post, keyword):
+    """highlight keyword entered by the user in red
+    """
+    pattern = re.compile(re.escape(keyword), re.IGNORECASE) 
+    return pattern.sub(f"<span style='color:red'>{keyword}</span>", post)
+
+
+def create_streamlit_app(keyword):
+    """create streamlit app with two columns, the left one will be used to 
+    display the full posts of the keyword prompted and the right coloumn will 
+    show sentiment buttons and the filtered posts after the user clicks on the 
+    buttons.The left coloum is displayed in a scrollable section for a better 
+    user experience
+    """
+    col_left, col_right = st.columns(2)
+
     with col_left:
-        st.write("### Full List of Posts Containing the Word:")
-        all_posts = df[df['message'].str.contains(selected_word, case=False)]['message'].drop_duplicates()
-        with st.expander("See all posts containing the word"):
-            for post in all_posts:
-                st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
+        st.markdown(f"### Full List of Posts Containing '{keyword}':")
+        full_posts = df[df['message'].str.contains(keyword, case=False)]['message'].drop_duplicates()
+        with st.expander(f"See all posts containing {keyword}"):
+            for post in full_posts:
+                st.markdown(f"{highlight_keyword_in_post(post, keyword)}", 
+                            unsafe_allow_html=True)
 
-    # Right side: Sentiment buttons and filtered posts
     with col_right:
-        # Annotations for sentiment buttons
-        st.write("#### Sentiment Analysis Categories:")
+        st.write("#### Sentiment Segmentation:")
         st.markdown("""
-        <p style='font-size: 12px'>**2 (News)**: The tweet links to factual news about climate change  
-        **1 (Pro)**: The tweet supports the belief of man-made climate change  
-        **0 (Neutral)**: The tweet neither supports nor refutes the belief of man-made climate change  
+        <p style='font-size: 12px'>**2 (News)**: The tweet links to factual news
+        about climate change\n  
+        **1 (Pro)**: The tweet supports the belief of man-made climate change\n  
+        **0 (Neutral)**: The tweet neither supports nor refutes the belief of 
+        man-made climate change\n  
         **-1 (Anti)**: The tweet does not believe in man-made climate change</p>
         """, unsafe_allow_html=True)
+        sentiment_segmentation_plot(keyword)
+        set_buttons(keyword)
 
-        # Calculate sentiment proportions for the word
-        total_posts = len(df[df['message'].str.contains(selected_word, case=False)])
-        sentiment_counts = df[df['message'].str.contains(selected_word, case=False)]['sentiment'].value_counts()
 
-        # Calculate proportions as percentages
-        sentiment_proportions = (sentiment_counts / total_posts) * 100  # Convert to percentage
+def sentiment_segmentation_plot(keyword):
+    """Calculate proportions of the posts(containing the keyword) of each 
+    sentiment segmentation and display with a horizontal clustered bar chart
+    """
+    total_keyword_posts = len(df[df['message'].str.contains(keyword, \
+                        case=False)])
+    sentiment_filtered_counts = df[df['message'].str.contains(keyword, \
+                                case=False)]['sentiment'].value_counts()
 
-        # Prepare data for plotting
-        sentiment_data = pd.DataFrame({
-            'Sentiment': sentiment_proportions.index.astype(str),  # Ensure Sentiment is treated as a string
-            'Proportion': sentiment_proportions.values
-        })
+    sentiment_proportions = (sentiment_filtered_counts / total_keyword_posts) * 100
 
-        # Display Clustered bar chart for sentiment distribution using Matplotlib
-        st.write("### Sentiment Distribution for Posts Containing the Word")
-        fig, ax = plt.subplots()
-        ax.barh(sentiment_data['Sentiment'], sentiment_data['Proportion'], color=['red', 'orange', 'yellow', 'green'])
-        ax.set_xlabel("Proportion of Posts (%)")
-        ax.set_ylabel("Sentiment (-1: Anti, 0: Neutral, 1: Pro, 2: News)")
-        ax.set_title("Sentiment Distribution")
-        for index, value in enumerate(sentiment_data['Proportion']):
-            ax.text(value, index, f"{value:.2f}%", va='center')  # Display the percentage on the bars
-        st.pyplot(fig)
+    sentiment_data = pd.DataFrame({
+        'Sentiment': sentiment_proportions.index.astype(str),
+        'Proportion': sentiment_proportions.values
+    })
 
-        # Sentiment buttons
-        st.write("#### Filter posts by sentiment score:")
-        col1, col2, col3, col4 = st.columns(4)
+    st.markdown(f"### Sentiment Distribution for Posts Containing '{keyword}'")
+    fig, ax = plt.subplots()
+    axes.barh(sentiment_data['Sentiment'], sentiment_data['Proportion'], \
+            color=['red', 'orange', 'yellow', 'green'])
+    axes.set_xlabel("Proportion of Posts (%)")
+    axes.set_ylabel("Sentiment (-1: Anti, 0: Neutral, 1: Pro, 2: News)")
+    axes.set_title(f"Sentiment Distribution of Posts Containing '{keyword}'")
+    for index, value in enumerate(sentiment_data['Proportion']):
+        axes.text(value, index, f"{value:.2f}%", va='center')
+    st.pyplot(fig)
 
-        # Check which sentiment button was pressed and update session state
-        if col1.button('-1'):
-            st.session_state.sentiment = -1
-        if col2.button('0'):
-            st.session_state.sentiment = 0
-        if col3.button('1'):
-            st.session_state.sentiment = 1
-        if col4.button('2'):
-            st.session_state.sentiment = 2
 
-        # Display filtered posts below the buttons based on session state
-        if st.session_state.sentiment is not None:
-            filtered_posts = filter_posts_by_sentiment(st.session_state.sentiment, selected_word)
-            st.write(f"#### Filtered Posts for sentiment {st.session_state.sentiment}:")
-            for post in filtered_posts:
-                st.write(f"- {highlight_word_in_text(post, selected_word)}", unsafe_allow_html=True)
+def filter_posts_by_sentiment(sentiment, keyword):
+    """filter posts with the sentiment buttons the user clicked on if the user 
+    wants to explore the sentiment segmentation of posts containing the keyword 
+    he entered. Drop duplicate posts
+    """
+    filtered_posts = df[(df['sentiment'] == sentiment) & (df['message'].str.\
+                    contains(keyword, case=False))]['message'].drop_duplicates()
+    return filtered_posts
 
-# Error message if buttons pressed without entering a word
-else:
-    st.write("Please enter a word to see the filtered results.")
+
+def set_buttons(keyword):
+    """set 4 buttons for sentiment segmentation. users could click on the button 
+    to filter posts(containing keyword entered) of corresponding sentiment score.
+    the filtered post will be displayed below the buttons
+    """
+    st.write("#### Filter posts by sentiment score:")
+    col1, col2, col3, col4 = st.columns(4)
+
+    if 'sentiment' not in st.session_state:
+        st.session_state.sentiment = None
+
+    if col1.button('-1'):
+        st.session_state.sentiment = -1
+    if col2.button('0'):
+        st.session_state.sentiment = 0
+    if col3.button('1'):
+        st.session_state.sentiment = 1
+    if col4.button('2'):
+        st.session_state.sentiment = 2
+
+    if st.session_state.sentiment is not None:
+        filtered_posts = filter_posts_by_sentiment\
+            (st.session_state.sentiment, keyword)
+        st.write(f"#### Filtered Posts for sentiment \
+        {st.session_state.sentiment}:")
+        for post in filtered_posts:
+            st.markdown(f"{highlight_word_in_text(post, keyword)}", \
+                     unsafe_allow_html=True)
+            
+            
+def main_display_wordcloud():
+    """Calculate word frequencies of the twitter posts and display the coherent
+    wordcloud with streamlit App
+    """
+    raw_posts = df['message']
+    word_freq = calculate_word_frequencies(raw_posts)
+    generate_wordcloud(word_freq)
+    if word_freq:   
+        # Streamlit App
+        st.title("Word Dashboard of Twitter Posts on Climate Change")
+    
+        # Display total word count
+        total_word_count = sum(word_freq.values())
+        st.markdown(f"### Total Word Count: {total_word_count}")
+        st.markdown("<p style='font-size: 14px'>(Topic word 'climate change' \
+        removed to display more informative vocabularies)</p>", \
+                    unsafe_allow_html=True)
+    
+    keyword = prompt_user_keyword(raw_posts)
+    create_streamlit_app(keyword)
+
+
+main_display_wordcloud()
+
+
