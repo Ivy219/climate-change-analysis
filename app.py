@@ -26,7 +26,8 @@ def calculate_word_frequencies(posts):
         for word in post.lower().split():
             if word not in stop_words and word not in string.punctuation and \
                not word.startswith('https:') and \
-               not climate_change_pattern.match(word):
+               not climate_change_pattern.match(word) and \
+               word != "climate" and word != "change":
                 tokens.append(word)
                 
     word_freq = {}
