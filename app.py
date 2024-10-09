@@ -20,14 +20,12 @@ def calculate_word_frequencies(posts):
     with "https://" and topic word "climate change" and calculate word frequency
     """
     tokens = []
-    climate_change_pattern = re.compile(r'\b#?climatechange\b', re.IGNORECASE)
     
     for post in posts:
         for word in post.lower().split():
             if word not in stop_words and word not in string.punctuation and \
-               not word.startswith('https:') and \
-               not climate_change_pattern.match(word) and \
-               word != "climate" and word != "change":
+               word != "climate" and word != "change" and \
+               not word.startswith('https:'):
                 tokens.append(word)
                 
     word_freq = {}
