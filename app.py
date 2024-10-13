@@ -153,14 +153,15 @@ def set_buttons(keyword):
     The filtered post will be displayed below the buttons."""
     
     st.write("#### Filter posts by sentiment score:")
-    # display the buttons side by side
+    # set four columns to display the buttons side by side
     col1, col2, col3, col4 = st.columns(4)
     
     # initialize button status to None to ensure the existence of unclicked buttons
     # (during the test, the rest buttons disappeared after one was clicked)
     if 'click' not in st.session_state:
-        st.session_state.sentiment = None
-
+        st.session_state.click = None
+        
+    # create four buttons labeled with four sentiment scores
     if col1.button('-1'):
         st.session_state.click = -1
     if col2.button('0'):
