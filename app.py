@@ -5,6 +5,7 @@ Date: 09/10/2024
 #Part 0: Import libraries
 # 1)
 # import scikit-learn library to clean dataset with ENGLISH_STOP_WORDS
+<<<<<<< HEAD
 # (i.e. words like "i", "was", "has", "before") ---> see Part I 
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 # import pandas library to deal with both string (posts) and 
@@ -25,8 +26,7 @@ import string
 
 # import re module to cope with string pattern so that the keyword entered by
 # the user could be highlighted in the post. But failed to fullfill due to the 
-# conclict with streamlit markdown
-# import re
+# conclict with streamlit text_area() function
 
 
 #Part I: Create a word cloud based on word frequency of the whole dataset 
@@ -49,6 +49,7 @@ def calculate_word_frequencies(posts):
     function of punctuation, URL links start with "https://" and topic word 
     "climate change" and calculate word frequency. 
     """
+    stop_words = set(stopwords.words('english'))
     tokens = []
     for post in posts:
         # Don't care if it's upper or lower cases so make all the words lower case
@@ -73,6 +74,7 @@ def generate_wordcloud(word_freq):
     word_cloud = WordCloud(width=2000, height=1000, background_color="white", \
                            max_words=200).generate_from_frequencies(word_freq)
     
+<<<<<<< HEAD
     # Fit the word cloud image into plot so that it can be showed by axes.imshow()
     # function of the matplotlib
     fig, axes = plt.subplots(figsize=(10, 5))
@@ -111,6 +113,7 @@ def sentiment_segmentation_plot(keyword):
     """Calculate proportions of the posts(containing the keyword) of each 
     sentiment segmentation and display with a horizontal clustered bar chart."""
     
+<<<<<<< HEAD
     # Find the posts(i.e. the 'message'column of the csv file) containing 
     # keyword
     keyword_posts = df['message'].str.contains(keyword, case=False)
