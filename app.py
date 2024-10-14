@@ -62,7 +62,7 @@ def calculate_word_frequencies(posts):
         # Don't care if it's upper or lower cases so make all the words lower case
         for word in post.lower().split():
             if word not in stop_words and word not in string.punctuation and \
-               word != "climate" and word != "change" and \
+               word != "climate" and word != "change" and word != "rt" and \
                not word.startswith('https:'):
                 tokens.append(word)
                 
